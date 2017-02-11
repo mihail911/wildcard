@@ -1,2 +1,2 @@
 # wild-card
-  # Modelling phenomena in the Cards Corpus
+  * Modelling phenomena in the Cards Corpus
