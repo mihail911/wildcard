@@ -77,7 +77,35 @@ class Game(object):
         :param gameboard_str:
         :return:
         """
-        raise NotImplementedError
+        
+        gameboard_str = gameboard_str.split( ";" )
+        board_rows = []
+        rows = []
+
+        # separate out the layout of walls from the distribution of cards
+        start = None
+        for i,row in enumerate(game_string):
+            if not row.startswith( "NEW_SECTION" ):
+            rows.append( row )
+        else:
+            start = i
+            break
+
+        # recreate board as a numpy array of ones and zeros
+        gameboard=np.array([ [ 1 if (char == "-" or char == "b") else 0 for char in row ] for row in rows ])
+
+        # now get card positions from the rest of the entries
+        card_positions = {}
+        for elem in gameboard_str[ start : ]: 
+            if elem: # make sure elem is non-empty
+                position,card=elem.strip( "NEW_SECTION" ).split( ":" )
+                row,col=position.split(",")
+                positions[ (int(row),int(col)) ] = card
+
+        ## not sure what kind of instance variables we want to store
+        self.gameboard = gameboard
+        self.initial_card_positions = card_positions
+
 
 
     def _process_transcript(self):
