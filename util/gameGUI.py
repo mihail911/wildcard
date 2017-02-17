@@ -20,6 +20,7 @@ class CardsGame:
 		self.clock = pygame.time.Clock()
 		self.canvas = pygame.display.set_mode((self.DISP_WIDTH, self.DISP_HEIGHT))
 		self.colors = { "BLACK":(0,0,0) , "WHITE":(255,255,255) , "RED":(255,0,0) , "BLUE":(0,0,255) , "GREEN":(0,255,0) , "GRAY":(126,126,126) }
+		self.player_font = pygame.font.SysFont('Arial', 25)
 		self._draw_gameboard()
 
 	def _get_display_size(self):
@@ -37,18 +38,32 @@ class CardsGame:
 
 		self.canvas.fill(self.colors[ "WHITE" ])
 
-		print gameboard 
+		#print gameboard 
 		#print np.sum( gameboard )
 		
 		for i in range(0,r):
 			for j in range(0,c):
 				x,y=(j*self.grid_square_length,i*self.grid_square_length)
-				if gameboard[i,j] > 0:
-					pygame.draw.rect(self.canvas, self.colors[ "BLACK" ] , (x,y,self.grid_square_length,self.grid_square_length))
-				elif gameboard[i,j] < 0:
-					pygame.draw.rect(self.canvas, self.colors[ "GRAY" ] , (x,y,self.grid_square_length,self.grid_square_length) )
+				entry=gameboard[i,j]
+				
+				if type(entry) == int:
+					if entry > 0:
+						pygame.draw.rect(self.canvas, self.colors[ "BLACK" ] , (x,y,self.grid_square_length,self.grid_square_length))
+					elif entry < 0:
+						pygame.draw.rect(self.canvas, self.colors[ "GRAY" ] , (x,y,self.grid_square_length,self.grid_square_length))
+					## else, it's a white box and fill takes care of it
+				## might break here 
+				else:
+					if entry == "P1":
+						pygame.draw.rect(self.canvas, self.colors[ "RED" ] , (x,y,self.grid_square_length,self.grid_square_length))
+						self.canvas.blit(self.player_font.render('P1',True,self.colors["BLACK"]),(x,y))
+					elif entry == "P2":
+						pygame.draw.rect(self.canvas, self.colors[ "RED" ] , (x,y,self.grid_square_length,self.grid_square_length))
+						self.canvas.blit(self.player_font.render('P2',True,self.colors["BLACK"]),(x,y))
+					else: ## to implement: account for case where p1 and p2 are in the same square
+						pygame.draw.rect(self.canvas, self.colors[ "RED" ] , (x,y,self.grid_square_length,self.grid_square_length))
+						self.canvas.blit(self.player_font.render('B',True,self.colors["BLACK"]),(x,y))
 
-	
 	def run(self):
 
 		while True: # main game loop
