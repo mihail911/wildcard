@@ -99,8 +99,6 @@ class Game(object):
                 break
 
         # recreate board as a numpy array of ones and zeros
-        # TODO: Should we represent hidden walls distinctly from regular walls?
-        # TODO: Change to -1 for hidden walls
         gameboard = []
         for row in rows:
             row_rep = []
