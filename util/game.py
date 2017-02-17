@@ -1,3 +1,4 @@
+import copy
 import csv
 import json
 import numpy as np
@@ -31,7 +32,7 @@ class Move(object):
             self.coords, self.card = None, None
             self.message = data
         else:
-            self.coords, self.card, self.message = None, None, None
+            self.coords, self.card, self.message = None, None, "TASK_COMPLETE_CLICKED"
 
 
     @property
@@ -69,6 +70,13 @@ class Game(object):
         self.transcript = transcript
         self._process_transcript()
 
+        # Store cards that each player has in hands
+        # TODO: Create Player objects storing this information as well
+        # as state
+        self.p1_cards, self.p2_cards = [], []
+        self.p1_loc = self.game_config["p1_initial_location"]
+        self.p2_loc = self.game_config["p2_initial_location"]
+
 
     def _recreate_start_gameboard(self, gameboard_str):
         """
@@ -91,21 +99,38 @@ class Game(object):
                 break
 
         # recreate board as a numpy array of ones and zeros
-        gameboard = np.array([ [ 1 if (char == "-" or char == "b") else 0 for char in row ] for row in rows ], dtype=object)
+        # TODO: Should we represent hidden walls distinctly from regular walls?
+        # TODO: Change to -1 for hidden walls
+        gameboard = []
+        for row in rows:
+            row_rep = []
+            for char in row:
+                if char == "-":
+                    row_rep.append(1)
+                elif char == "b":
+                    row_rep.append(-1)
+                else:
+                    row_rep.append(0)
+            gameboard.append(row_rep)
+        # Convert to numpy array
+        gameboard = np.array(gameboard, dtype=object)
 
         # now get card positions from the rest of the entries
-        card_positions = {}
+        position_to_card = {}
+        card_to_position = {}
         for elem in gameboard_str[ start: ]:
             if elem: # make sure elem is non-empty
                 if elem.startswith("NEW_SECTION"):
                     elem = elem.strip("NEW_SECTION")
                 position, card = elem.split( ":" )
                 row, col = position.split(",")
-                card_positions[ (int(row),int(col)) ] = card
-                gameboard[int(row), int(col)] = card
+                position_to_card[ (int(row),int(col)) ] = card
+                card_to_position[card] = (int(row), int(col))
+
 
         self.start_gameboard = gameboard
-        self.initial_card_positions = card_positions
+        self.positon_to_card = position_to_card
+        self.card_to_position = card_to_position
 
 
     def _process_transcript(self):
@@ -129,8 +154,12 @@ class Game(object):
                     self.game_config["p2_max_turns"] = int(line[3])
                 elif line[2] == "PLAYER_INITIAL_LOCATION" and line[0] == "Player 1":
                     self.game_config["p1_initial_location"] = [int(c) for c in line[3].split(",")]
+                    self.start_gameboard[self.game_config["p1_initial_location"][0],
+                                         self.game_config["p1_initial_location"][1]] = "P1"
                 elif line[2] == "PLAYER_INITIAL_LOCATION" and line[0] == "Player 2":
                     self.game_config["p2_initial_location"] = [int(c) for c in line[3].split(",")]
+                    self.start_gameboard[self.game_config["p2_initial_location"][0],
+                                         self.game_config["p2_initial_location"][1]] = "P2"
                 # Handle remaining moves, disregarding metadata
                 elif line[2] not in ["ORIGINAL_FILENAME", "COLLECTION_SITE", "TASK_COMPLETED",
                                      "PLAYER_1", "PLAYER_2", "PLAYER_1_TASK_ID", "PLAYER_2_TASK_ID", "GOAL_DESCRIPTION"]:
@@ -140,11 +169,54 @@ class Game(object):
 
     def step(self, num_moves=1):
         """
-        Step the gameboard one move along (i.e. one move of the transcript)
+        Step the gameboard one move along (i.e. one move of the transcript) from
+        start gameboard state
         :param num_moves: Number of moves to step along
         :return:
         """
-        raise NotImplementedError
+        running_gameboard = copy.deepcopy(self.start_gameboard)
+
+        for idx in range(num_moves):
+            move = self.all_moves[idx]
+            print move
+            if move.move_type == "PLAYER_MOVE":
+                coords = move.coords
+                if move.player == 1:
+                    running_gameboard[coords[0], coords[1]] = "P1"
+                    old_loc = self.p1_loc
+                    running_gameboard[old_loc[0], old_loc[1]] = 0
+                    self.p1_loc = coords
+                elif move.player == 2:
+                    running_gameboard[coords[0], coords[1]] = "P2"
+                    old_loc = self.p2_loc
+                    running_gameboard[old_loc[0], old_loc[1]] = 0
+                    self.p2_loc = coords
+            elif move.move_type == "PLAYER_PICKUP_CARD":
+                coords = move.coords
+                if move.player == 1:
+                    self.p1_cards.append(move.card)
+                elif move.player == 2:
+                    self.p2_cards.append(move.card)
+
+                del self.card_to_position[move.card]
+                del self.position_to_card[coords[0], coords[1]]
+            elif move.move_type == "PLAYER_DROP_CARD":
+                coords = move.coords
+                if move.player == 1:
+                    try:
+                        self.p1_cards.remove(move.card)
+                    except Exception as e:
+                        print e
+                elif move.player == 2:
+                    try:
+                        self.p2_cards.remove(move.card)
+                    except Exception as e:
+                        print e
+                self.card_to_position[move.card] = tuple(coords)
+                self.position_to_card[coords[0], coords[1]] = move.card
+
+
+        return running_gameboard
 
 
     def reset(self):
@@ -174,7 +246,6 @@ class Game(object):
 
 
 
-
 if __name__ == "__main__":
     transcript = os.path.join(os.path.dirname(os.path.abspath(".")), "data/CardsCorpus-v02/transcripts/01/cards_0000001.csv")
     game = Game(transcript)
@@ -183,4 +254,4 @@ if __name__ == "__main__":
     m2 = Move("Player 2", "CHAT_MESSAGE_PREFIX", "hi there10")
     m3 = Move("Player 2", "PLAYER_PICKUP_CARD", "16,14:4H")
 
-    game._recreate_start_gameboard()
+    game.step(1)
