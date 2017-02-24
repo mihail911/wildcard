@@ -19,8 +19,9 @@ class CardsGame:
 
 		self.clock = pygame.time.Clock()
 		self.canvas = pygame.display.set_mode((self.DISP_WIDTH, self.DISP_HEIGHT))
-		self.colors = { "BLACK":(0,0,0) , "WHITE":(255,255,255) , "RED":(255,0,0) , "BLUE":(0,0,255) , "GREEN":(0,255,0) , "GRAY":(126,126,126) }
+		self.colors = { "BLACK":(0,0,0) , "WHITE":(255,255,255) , "RED":(255,0,0) , "BLUE":(0,0,255) , "GREEN":(0,255,0) , "GRAY":(126,126,126) , "LIGHT-YELLOW":(255,255,153) , "LIGHT-BLUE":(135,206,250) , "CRIMSON":(220,20,60)}
 		self.player_font = pygame.font.SysFont('Arial', 25)
+		self.card_font = pygame.font.SysFont('Arial',17)
 		self._draw_gameboard()
 
 		self.move_index = 0
@@ -37,37 +38,48 @@ class CardsGame:
 
 		## iterate through numpy array 
 		gameboard = self.game.start_gameboard
+		card_positions=self.game.position_to_card
+
+
 		r,c = gameboard.shape
 		self.canvas.fill(self.colors[ "WHITE" ])
 
-		#print gameboard 
-		#print np.sum( gameboard )
-		
 		for i in range(0,r):
 			for j in range(0,c):
 				x,y=(j*self.grid_square_length,i*self.grid_square_length)
 				entry=gameboard[i,j]
-				
+
+				## render initial card position
+				if (j,i) in card_positions:
+					cards_list = card_positions[(j,i)]
+					card_name = None
+					
+					if len( cards_list ) == 1:
+						card_name = cards_list[ 0 ]
+					else:
+						card_name = "M" ## for "multiple cards at location"
+
+					pygame.draw.rect(self.canvas, self.colors[ "LIGHT-YELLOW" ] , (y,x,self.grid_square_length,self.grid_square_length))
+					self.canvas.blit(self.card_font.render(card_name,True,self.colors["BLACK"]),(y,x))
+
 				if type(entry) == int:
 					if entry > 0:
 						pygame.draw.rect(self.canvas, self.colors[ "BLACK" ] , (x,y,self.grid_square_length,self.grid_square_length))
 					elif entry < 0:
 						pygame.draw.rect(self.canvas, self.colors[ "GRAY" ] , (x,y,self.grid_square_length,self.grid_square_length))
-					## else, it's a white box and fill takes care of it
 				else:
-
 					if entry == "P1":
 						self.p1_position = i,j
-						pygame.draw.rect(self.canvas, self.colors[ "RED" ] , (x,y,self.grid_square_length,self.grid_square_length))
+						pygame.draw.rect(self.canvas, self.colors[ "CRIMSON" ] , (x,y,self.grid_square_length,self.grid_square_length))
 						self.canvas.blit(self.player_font.render('P1',True,self.colors["BLACK"]),(x,y))
 					elif entry == "P2":
 						self.p2_position = i,j
-						pygame.draw.rect(self.canvas, self.colors[ "RED" ] , (x,y,self.grid_square_length,self.grid_square_length))
+						pygame.draw.rect(self.canvas, self.colors[ "LIGHT-BLUE" ] , (x,y,self.grid_square_length,self.grid_square_length))
 						self.canvas.blit(self.player_font.render('P2',True,self.colors["BLACK"]),(x,y))
 					else: ## to implement: account for case where p1 and p2 are in the same square
 						self.p1_position = i,j
 						self.p2_position = i,j
-						pygame.draw.rect(self.canvas, self.colors[ "RED" ] , (x,y,self.grid_square_length,self.grid_square_length))
+						pygame.draw.rect(self.canvas, self.colors[ "GREEN" ] , (x,y,self.grid_square_length,self.grid_square_length))
 						self.canvas.blit(self.player_font.render('B',True,self.colors["BLACK"]),(x,y))
 
 	def render_move(self):
@@ -85,7 +97,7 @@ class CardsGame:
 				x,y=j*self.grid_square_length,i*self.grid_square_length
 				
 				pygame.draw.rect(self.canvas, self.colors[ "WHITE" ] , (x_prev,y_prev,self.grid_square_length,self.grid_square_length))
-				pygame.draw.rect(self.canvas, self.colors[ "RED" ] , (x,y,self.grid_square_length,self.grid_square_length))
+				pygame.draw.rect(self.canvas, self.colors[ "CRIMSON" ] , (x,y,self.grid_square_length,self.grid_square_length))
 				self.canvas.blit(self.player_font.render('P1',True,self.colors["BLACK"]),(x,y))
 			else:
 				i_prev,j_prev = self.p2_position
@@ -96,12 +108,13 @@ class CardsGame:
 				x,y=j*self.grid_square_length,i*self.grid_square_length
 				
 				pygame.draw.rect(self.canvas, self.colors[ "WHITE" ] , (x_prev,y_prev,self.grid_square_length,self.grid_square_length))
-				pygame.draw.rect(self.canvas, self.colors[ "RED" ] , (x,y,self.grid_square_length,self.grid_square_length))
+				pygame.draw.rect(self.canvas, self.colors[ "LIGHT-BLUE" ] , (x,y,self.grid_square_length,self.grid_square_length))
 				self.canvas.blit(self.player_font.render('P2',True,self.colors["BLACK"]),(x,y))
+		elif move.move_type == "CHAT_MESSAGE_PREFIX":
+			print "player " + str(move.player)
+			print move.message
 
-				
-		print move.move_type
-	
+		## need to handle player pickup and player drop card
 	def run(self):
 
 		while True: # main game loop
@@ -120,14 +133,12 @@ class CardsGame:
 						self.move_index -= 1
 						self.render_move()
 
-
 			pygame.display.update()
 
 def main():
 	g = CardsGame("data/CardsCorpus-v02/transcripts/01/cards_0000001.csv","Game 1")
-	print [ move.move_type for move in g.game.all_moves[ : 10 ] ]
+	#print [ move.move_type for move in g.game.all_moves[ : 10 ] ]
 	g.run()
-
 
 
 if __name__ == "__main__":
