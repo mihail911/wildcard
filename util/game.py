@@ -84,12 +84,13 @@ class Game(object):
         self._process_transcript()
 
         # Store cards that each player has in hands
-        # TODO: Create Player objects storing this information as well
-        # as state
         # NOTE: The below is not updated as the game is stepped through...
         self.p1_cards, self.p2_cards = [], []
-        self.p1_loc = self.game_config["p1_initial_location"]
-        self.p2_loc = self.game_config["p2_initial_location"]
+        # In case a transcript does not have this information
+        if "p1_initial_location" in self.game_config:
+            self.p1_loc = self.game_config["p1_initial_location"]
+        if "p2_initial_location" in self.game_config:
+            self.p2_loc = self.game_config["p2_initial_location"]
 
 
     def _recreate_start_gameboard(self, gameboard_str):
