@@ -23,7 +23,7 @@ class CardsGame:
 		self.player_font = pygame.font.SysFont('Arial', 25)
 		self.card_font = pygame.font.SysFont('Arial',17)
 		self._draw_gameboard()
-
+		
 		self.move_index = 0
 		self.total_moves = len(self.game.all_moves)
 
@@ -39,7 +39,6 @@ class CardsGame:
 		## iterate through numpy array 
 		gameboard = self.game.start_gameboard
 		card_positions=self.game.position_to_card
-
 
 		r,c = gameboard.shape
 		self.canvas.fill(self.colors[ "WHITE" ])
@@ -86,8 +85,10 @@ class CardsGame:
 		print self.move_index
 
 		move = self.game.all_moves[ self.move_index ]
+		card_positions = self.game.position_to_card
 
 		if move.move_type == "PLAYER_MOVE":
+			
 			if move.player == 1:
 				i_prev,j_prev = self.p1_position
 				i,j = move.coords
@@ -95,10 +96,28 @@ class CardsGame:
 
 				x_prev,y_prev=j_prev*self.grid_square_length,i_prev*self.grid_square_length
 				x,y=j*self.grid_square_length,i*self.grid_square_length
-				
-				pygame.draw.rect(self.canvas, self.colors[ "WHITE" ] , (x_prev,y_prev,self.grid_square_length,self.grid_square_length))
+			
+				## render initial card position
+				if (i_prev,j_prev) in card_positions:
+					cards_list = card_positions[(i_prev,j_prev)]
+					card_name = None
+
+					if len( cards_list ) == 1:
+						card_name = cards_list[ 0 ]
+					else:
+						card_name = "M" ## for "multiple cards at location"
+
+					pygame.draw.rect(self.canvas,self.colors[ "LIGHT-YELLOW" ],(x_prev,y_prev,self.grid_square_length,self.grid_square_length))
+					self.canvas.blit(self.card_font.render(card_name,True,self.colors["BLACK"]),(x_prev,y_prev))
+
+				else:
+
+					pygame.draw.rect(self.canvas, self.colors[ "WHITE" ] , (x_prev,y_prev,self.grid_square_length,self.grid_square_length))
+			
+				#pygame.draw.rect(self.canvas, self.colors[ "WHITE" ] , (x_prev,y_prev,self.grid_square_length,self.grid_square_length))
 				pygame.draw.rect(self.canvas, self.colors[ "CRIMSON" ] , (x,y,self.grid_square_length,self.grid_square_length))
 				self.canvas.blit(self.player_font.render('P1',True,self.colors["BLACK"]),(x,y))
+			
 			else:
 				i_prev,j_prev = self.p2_position
 				i,j = move.coords
@@ -106,13 +125,72 @@ class CardsGame:
 
 				x_prev,y_prev=j_prev*self.grid_square_length,i_prev*self.grid_square_length
 				x,y=j*self.grid_square_length,i*self.grid_square_length
+
+				## render initial card position
+				if (i_prev,j_prev) in card_positions:
+
+					cards_list = card_positions[(i_prev,j_prev)]
+					card_name = None
+					if len( cards_list ) == 1:
+						card_name = cards_list[ 0 ]
+					else:
+						card_name = "M" ## for "multiple cards at location"
+
+					pygame.draw.rect(self.canvas,self.colors[ "LIGHT-YELLOW" ],(x_prev,y_prev,self.grid_square_length,self.grid_square_length))
+					self.canvas.blit(self.card_font.render(card_name,True,self.colors["BLACK"]),(x_prev,y_prev))
+
+				else:
+
+					pygame.draw.rect(self.canvas, self.colors[ "WHITE" ] , (x_prev,y_prev,self.grid_square_length,self.grid_square_length))
 				
-				pygame.draw.rect(self.canvas, self.colors[ "WHITE" ] , (x_prev,y_prev,self.grid_square_length,self.grid_square_length))
+				#pygame.draw.rect(self.canvas, self.colors[ "WHITE" ] , (x_prev,y_prev,self.grid_square_length,self.grid_square_length))
 				pygame.draw.rect(self.canvas, self.colors[ "LIGHT-BLUE" ] , (x,y,self.grid_square_length,self.grid_square_length))
 				self.canvas.blit(self.player_font.render('P2',True,self.colors["BLACK"]),(x,y))
+		
+
 		elif move.move_type == "CHAT_MESSAGE_PREFIX":
+			# just print some stuff out
 			print "player " + str(move.player)
 			print move.message
+			
+		'''
+		elif move.move_type == "PLAYER_PICKUP_CARD":
+
+			i,j=move.coords
+			card=move.card
+			print "PLAYER_PICKUP_CARD", (i,j), card
+
+			x,y=j*self.grid_square_length,i*self.grid_square_length
+
+			cards_at_coords = self.game.position_to_card.get((i,j))
+			if len( cards_at_coords ) == 1:
+				## remove element altogether
+				del self.game.position_to_card[(i,j)]
+				pygame.draw.rect(self.canvas, self.colors[ "WHITE" ] , (x,y,self.grid_square_length,self.grid_square_length))
+
+
+			else:
+
+				cards_at_coords = cards_at_coords.remove(card)
+				self.game.position_to_card[(i,j)] = cards_at_coords
+				if len(cards_at_coords) == 1:
+					card_name=cards_at_coords[0]
+
+					pygame.draw.rect(self.canvas,self.colors[ "LIGHT-YELLOW" ],(x,y,self.grid_square_length,self.grid_square_length))
+					self.canvas.blit(self.card_font.render(card_name,True,self.colors["BLACK"]),(x,y))
+
+				else:
+					card_name = "M"
+
+					pygame.draw.rect(self.canvas,self.colors[ "LIGHT-YELLOW" ],(x,y,self.grid_square_length,self.grid_square_length))
+					self.canvas.blit(self.card_font.render(card_name,True,self.colors["BLACK"]),(x,y))
+		'''
+
+
+
+
+
+
 
 		## need to handle player pickup and player drop card
 	def run(self):
@@ -136,8 +214,9 @@ class CardsGame:
 			pygame.display.update()
 
 def main():
+	#g = CardsGame("data/CardsCorpus-v02/transcripts/01/cards_0000001.csv","Game 1")
+	#print [ move.move_type for move in g.game.all_moves[ : 10 ] ]	
 	g = CardsGame("data/CardsCorpus-v02/transcripts/01/cards_0000001.csv","Game 1")
-	#print [ move.move_type for move in g.game.all_moves[ : 10 ] ]
 	g.run()
 
 
