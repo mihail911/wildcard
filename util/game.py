@@ -66,7 +66,7 @@ class GameState(object):
     """
     Stores game state information
     """
-    def __init__(self, p1_loc, p2_loc, p1_cards, p2_cards, position_to_card, idx=0):
+    def __init__(self, p1_loc, p2_loc, p1_cards, p2_cards, position_to_card, idx=0, gameboard=None):
         self.p1_loc = p1_loc
         self.p2_loc = p2_loc
         self.p1_cards = p1_cards
@@ -74,6 +74,24 @@ class GameState(object):
         self.position_to_card = position_to_card
         # Num moves into all_moves
         self.idx = idx
+        # Describes where walls/open space is, represented in array format
+        self.gameboard = gameboard
+
+
+    def dist_to_card(self, player="p1", card=None):
+        """
+        Calculate distance from player to card
+        # TODO: Should we provide Manhattan distance or a BFS based distance measure
+        :param player:
+        :param card:
+        :return:
+        """
+        if player == "p1":
+            p_loc = self.p1_loc
+        else:
+            p_loc = self.p2_loc
+
+
 
 
 class Game(object):
@@ -207,7 +225,8 @@ class Game(object):
                                    self.game_config["p2_initial_location"],
                                    p1_cards=[],
                                    p2_cards=[],
-                                   position_to_card=self.position_to_card)
+                                   position_to_card=self.position_to_card,
+                                   gameboard=self.start_gameboard)
 
         for idx in range(game_state.idx, game_state.idx + num_moves):
             move = self.all_moves[idx]
@@ -256,9 +275,11 @@ class Game(object):
 
         start_game_state = self.step(num_moves=start)
         gamestate_list.append(start_game_state)
+        curr_game_state = start_game_state
         for _ in range(end - start):
-            next = self.step(num_moves=1, game_state=start_game_state)
+            next = self.step(num_moves=1, game_state=copy.deepcopy(curr_game_state))
             gamestate_list.append(next)
+            curr_game_state = next
 
         return gamestate_list
 
@@ -289,7 +310,6 @@ class Game(object):
 
 
 
-
 if __name__ == "__main__":
     transcript = os.path.join(os.path.dirname(os.path.abspath(".")), "data/CardsCorpus-v02/transcripts/01/cards_0000001.csv")
     game = Game(transcript)
@@ -298,4 +318,4 @@ if __name__ == "__main__":
     m2 = Move("Player 2", "CHAT_MESSAGE_PREFIX", "hi there10", False)
     m3 = Move("Player 2", "PLAYER_PICKUP_CARD", "16,14:4H", False)
 
-    game_states = game.game_state_evolve(0, 140)
+    game_states = game.game_state_evolve(0, 240)

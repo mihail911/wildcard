@@ -67,4 +67,3 @@ if __name__ == "__main__":
 
    tokenizer = Tokenizer()
    ce = card_expressions()
-
