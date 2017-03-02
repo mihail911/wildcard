@@ -80,7 +80,7 @@ class CardsGame:
 						pygame.draw.rect(self.canvas, self.colors[ "GREEN" ] , (x,y,self.grid_square_length,self.grid_square_length))
 						self.canvas.blit(self.player_font.render('B',True,self.colors["BLACK"]),(x,y))
 
-    def render_move(self):
+    def render_move(self,reverse=False):
 
         move = self.game.all_moves[ self.move_index ]
         card_positions = self.game.position_to_card
@@ -156,11 +156,17 @@ class CardsGame:
             i,j=move.coords
             card=move.card
             cards_at_coords = self.game.position_to_card.get((i,j))
-            if len(cards_at_coords)==1:
-                del self.game.position_to_card[(i,j)]
-                ## next time player moves from square, white rect should get rendered
+            if not reverse:
+                if len(cards_at_coords)==1:
+                    del self.game.position_to_card[(i,j)]
+                    ## next time player moves from square, white rect should get rendered
+                else:
+                    self.game.position_to_card[(i,j)].remove(card)
             else:
-                self.game.position_to_card[(i,j)].remove(card)
+                if cards_at_coords == None:
+                    self.game.position_to_card[(i,j)] = [ card ]
+                else:
+                    self.game.position_to_card[(i,j)].append(card)
 
             print move_str
         
@@ -172,11 +178,18 @@ class CardsGame:
             i,j=move.coords
             card=move.card
             cards_at_coords = self.game.position_to_card.get((i,j))
-            if cards_at_coords == None:
-                self.game.position_to_card[(i,j)] = [ card ]
+            if not reverse:
+                if cards_at_coords == None:
+                    self.game.position_to_card[(i,j)] = [ card ]
+                else:
+                    self.game.position_to_card[(i,j)].append(card)
             else:
-                self.game.position_to_card[(i,j)].append(card)
-                
+                if len(cards_at_coords)==1:
+                    del self.game.position_to_card[(i,j)]
+                    ## next time player moves from square, white rect should get rendered
+                else:
+                    self.game.position_to_card[(i,j)].remove(card)
+
             print move_str
 
         ## need to handle player pickup and player drop card
@@ -198,7 +211,7 @@ class CardsGame:
                         # TODO: Fix bug here whereby reenacting previous move isn't possible because
                         # player is at different spot on the board
                         self.move_index -= 1
-                        self.render_move()
+                        self.render_move(reverse=True)
 
 
 
