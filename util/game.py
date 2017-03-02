@@ -5,26 +5,32 @@ import numpy as np
 import pprint
 import os
 
+from cards import Tokenizer
 from collections import defaultdict
+from scipy.spatial.distance import cityblock
+from utils import card_expressions, mentions_cards
+
 
 """
 Stores an instance of a game corresponding to a transcript
 """
 
 class Move(object):
-
-    def __init__(self, player, move_type, data):
+    def __init__(self, player, move_type, data, mentions_card):
         if player == "Player 1":
             self.player = 1
         else:
             self.player = 2
 
         self.move_type = move_type
+        # NOTE: mentions_card field only relevant for message type moves
+        self.mentions_card = mentions_card
 
         if move_type == "PLAYER_MOVE":
             self.coords = [int(c) for c in data.split(",")]
             self.card = None
             self.message = None
+
         elif move_type == "PLAYER_PICKUP_CARD" or move_type == "PLAYER_DROP_CARD":
             x, rest = data.split(",")
             y, card = rest.split(":")
@@ -77,6 +83,9 @@ class Game(object):
         self.start_gameboard = None
         # Stores various parameters about the current game
         self.game_config = {}
+        # Some utilities for processing data
+        self.card_expressions = card_expressions()
+        self.tokenizer = Tokenizer()
 
         # Store all moves in game
         self.all_moves = []
@@ -100,7 +109,6 @@ class Game(object):
         :param gameboard_str:
         :return:
         """
-        
         gameboard_str = gameboard_str.split(";")
         rows = []
 
@@ -176,7 +184,12 @@ class Game(object):
                 # Handle remaining moves, disregarding metadata
                 elif line[2] not in ["ORIGINAL_FILENAME", "COLLECTION_SITE", "TASK_COMPLETED",
                                      "PLAYER_1", "PLAYER_2", "PLAYER_1_TASK_ID", "PLAYER_2_TASK_ID", "GOAL_DESCRIPTION"]:
-                    move = Move(line[0], line[2], line[3])
+                    # Check if card mention present
+                    if line[2] == "CHAT_MESSAGE_PREFIX":
+                        mentions_card = mentions_cards(line[3].lower(), self.tokenizer, self.card_expressions)
+                    else:
+                        mentions_card = False
+                    move = Move(line[0], line[2], line[3], mentions_card)
                     self.all_moves.append(move)
 
 
@@ -198,7 +211,6 @@ class Game(object):
 
         for idx in range(game_state.idx, game_state.idx + num_moves):
             move = self.all_moves[idx]
-            print move
             if move.move_type == "PLAYER_MOVE":
                 coords = move.coords
                 if move.player == 1:
@@ -282,8 +294,8 @@ if __name__ == "__main__":
     transcript = os.path.join(os.path.dirname(os.path.abspath(".")), "data/CardsCorpus-v02/transcripts/01/cards_0000001.csv")
     game = Game(transcript)
 
-    m1 = Move("Player 1", "PLAYER_MOVE", "8,10")
-    m2 = Move("Player 2", "CHAT_MESSAGE_PREFIX", "hi there10")
-    m3 = Move("Player 2", "PLAYER_PICKUP_CARD", "16,14:4H")
+    m1 = Move("Player 1", "PLAYER_MOVE", "8,10", False)
+    m2 = Move("Player 2", "CHAT_MESSAGE_PREFIX", "hi there10", False)
+    m3 = Move("Player 2", "PLAYER_PICKUP_CARD", "16,14:4H", False)
 
     game_states = game.game_state_evolve(0, 140)

@@ -5,7 +5,7 @@ import re
 
 from cards import Tokenizer
 from game import Game
-from scipy.spatial.distance import cityblock
+
 
 """
 Basic stats on dataset
