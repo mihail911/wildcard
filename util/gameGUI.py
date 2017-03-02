@@ -168,13 +168,17 @@ class CardsGame:
             elif event.type == KEYDOWN:
                 if event.key == K_RIGHT:
                     if self.move_index < self.total_moves - 1:
-                        self.move_index += 1
                         self.render_move()
+                        self.move_index += 1
 
                 elif event.key == K_LEFT:
                     if self.move_index > 0:
+                        # TODO: Fix bug here whereby reenacting previous move isn't possible because
+                        # player is at different spot on the board
                         self.move_index -= 1
                         self.render_move()
+
+
 
             pygame.display.update()
 
