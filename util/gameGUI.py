@@ -94,8 +94,12 @@ class CardsGame:
                 x_prev,y_prev=j_prev*self.grid_square_length,i_prev*self.grid_square_length
                 x,y=j*self.grid_square_length,i*self.grid_square_length
 
-                ## render initial card position
-                if (i_prev,j_prev) in card_positions:
+                if (i_prev,j_prev) == self.p2_position:
+
+                    pygame.draw.rect(self.canvas, self.colors[ "LIGHT-BLUE" ] , (x_prev,y_prev,self.grid_square_length,self.grid_square_length))
+                    self.canvas.blit(self.player_font.render('P2',True,self.colors["BLACK"]),(x_prev,y_prev))
+             
+                elif (i_prev,j_prev) in card_positions:    ## render initial card position
                     cards_list = card_positions[(i_prev,j_prev)]
                     card_name = None
 
@@ -121,8 +125,12 @@ class CardsGame:
                 x_prev,y_prev=j_prev*self.grid_square_length,i_prev*self.grid_square_length
                 x,y=j*self.grid_square_length,i*self.grid_square_length
 
-                                ## render initial card position
-                if (i_prev,j_prev) in card_positions:
+                if (i_prev,j_prev) == self.p1_position:
+
+                    pygame.draw.rect(self.canvas, self.colors[ "CRIMSON" ] , (x_prev,y_prev,self.grid_square_length,self.grid_square_length))
+                    self.canvas.blit(self.player_font.render('P1',True,self.colors["BLACK"]),(x_prev,y_prev))
+               
+                elif (i_prev,j_prev) in card_positions:  ## render card position
                     cards_list = card_positions[(i_prev,j_prev)]
                     card_name = None
 
@@ -218,7 +226,7 @@ class CardsGame:
             pygame.display.update()
 
 def main():
-    g = CardsGame("data/CardsCorpus-v02/transcripts/01/cards_0000001.csv","Game 1")
+    g = CardsGame("data/CardsCorpus-v02/transcripts/01/cards_0000002.csv","Game 2")
     #print [ move.move_type for move in g.game.all_moves[ : 10 ] ]
     g.run()
 
