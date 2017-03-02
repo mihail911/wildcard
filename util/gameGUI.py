@@ -4,7 +4,6 @@ from pygame.locals import *
 from game import *
 from utils import Color, color_str
 
-
 class CardsGame:
 
     def __init__(self,transcript_location,transcript_name):
@@ -82,6 +81,7 @@ class CardsGame:
 						self.canvas.blit(self.player_font.render('B',True,self.colors["BLACK"]),(x,y))
 
     def render_move(self):
+
         move = self.game.all_moves[ self.move_index ]
         card_positions = self.game.position_to_card
         if move.move_type == "PLAYER_MOVE":
@@ -146,15 +146,37 @@ class CardsGame:
             move_str = color_str("Player " + str(move.player) + " , " +
                                  move.move_type + " , " + move.message, Color.RED)
             print move_str
+
         
         elif move.move_type == "PLAYER_PICKUP_CARD":
             move_str = color_str("Player " + str(move.player) + " , " +
                                  move.move_type + " , " + move.card, Color.YELLOW)
+
+            ## update game's card dictionary (this feels somewhat ugly tbh)
+            i,j=move.coords
+            card=move.card
+            cards_at_coords = self.game.position_to_card.get((i,j))
+            if len(cards_at_coords)==1:
+                del self.game.position_to_card[(i,j)]
+                ## next time player moves from square, white rect should get rendered
+            else:
+                self.game.position_to_card[(i,j)].remove(card)
+
             print move_str
         
         elif move.move_type == "PLAYER_DROP_CARD":
             move_str = color_str("Player " + str(move.player) + " , " +
                                  move.move_type + " , " + move.card, Color.GREEN)
+
+            ## update game's card dictionary (this feels somewhat ugly tbh)
+            i,j=move.coords
+            card=move.card
+            cards_at_coords = self.game.position_to_card.get((i,j))
+            if cards_at_coords == None:
+                self.game.position_to_card[(i,j)] = [ card ]
+            else:
+                self.game.position_to_card[(i,j)].append(card)
+                
             print move_str
 
         ## need to handle player pickup and player drop card
