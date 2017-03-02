@@ -2,7 +2,7 @@ import pygame , sys , os
 import numpy as np
 from pygame.locals import *
 from game import *
-from utils import Color, color_str
+from utils import Color
 
 class CardsGame:
 
@@ -23,7 +23,7 @@ class CardsGame:
         self.player_font = pygame.font.SysFont('Arial', 15)
         self.card_font = pygame.font.SysFont('Arial',17)
         self._draw_gameboard()
-
+        self.color = Color()
         self.move_index = 0
         self.total_moves = len(self.game.all_moves)
 		
@@ -151,14 +151,14 @@ class CardsGame:
        
         
         elif move.move_type == "CHAT_MESSAGE_PREFIX":
-            move_str = color_str("Player " + str(move.player) + " , " +
-                                 move.move_type + " , " + move.message, Color.RED)
+            move_str = self.color.color_str("Player " + str(move.player) + " , " +
+                                 move.move_type + " , " + move.message, "red")
             print move_str
 
         
         elif move.move_type == "PLAYER_PICKUP_CARD":
-            move_str = color_str("Player " + str(move.player) + " , " +
-                                 move.move_type + " , " + move.card, Color.YELLOW)
+            move_str = self.color.color_str("Player " + str(move.player) + " , " +
+                                 move.move_type + " , " + move.card, "yellow")
 
             ## update game's card dictionary (this feels somewhat ugly tbh)
             i,j=move.coords
@@ -179,8 +179,8 @@ class CardsGame:
             print move_str
         
         elif move.move_type == "PLAYER_DROP_CARD":
-            move_str = color_str("Player " + str(move.player) + " , " +
-                                 move.move_type + " , " + move.card, Color.GREEN)
+            move_str = self.color.color_str("Player " + str(move.player) + " , " +
+                                 move.move_type + " , " + move.card, "green")
 
             ## update game's card dictionary (this feels somewhat ugly tbh)
             i,j=move.coords

@@ -15,9 +15,13 @@ class Color:
    RED = '\033[91m'
    END = '\033[0m'
 
+   color_map = {"green": GREEN,
+                "yellow": YELLOW,
+                "red": RED,
+                }
 
-def color_str(str, color=Color.GREEN):
-   return color + str + Color.END
+   def color_str(self, str, color="green"):
+      return Color.color_map[color] + str + Color.END
 
 
 def mentions_cards(utterance, tokenizer, card_expressions):
