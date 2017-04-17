@@ -1,2 +1,7 @@
 cards-env/*
 *.pyc
+*.log
+*.out
+*.aux
+*.bbl
+*.blg
