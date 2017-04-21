@@ -74,6 +74,23 @@ def compute_window(coi):
     return windows
 
 
+def card_type(coi):
+    """
+    Extract card type from card ("H", "C", "D", S")
+    :param coi:
+    :return:
+    """
+    return coi[-1]
+
+
+def append_suffix(cards, type):
+    appended = []
+    for c in cards:
+        appended.append(str(c) + type)
+
+    return appended
+
+
 def compute_ed(hands, coi):
     """
     Compute edit distance for both players given their hands.
@@ -82,7 +99,27 @@ def compute_ed(hands, coi):
     :param coi: card-of-interest
     :return:
     """
-    suffixes = ["H", "C", "D", "S"]
+    type = card_type(coi)
+    coi = coi.strip("SDCH")
+    windows = compute_window(coi)
+    all_hands = set(hands["1"] + hands["2"])
+
+    min_ed = float("inf")
+    optimal_window = None
+    for w in windows:
+        w = set(append_suffix(w, type))
+        missing = w.difference(all_hands)
+        all = w.union(all_hands)
+
+        # Cards over the desired range
+        overflow = all.difference(w)
+
+        ed = len(overflow) + len(missing)
+        if ed < min_ed:
+            min_ed = ed
+            optimal_window = w
+
+    return optimal_window, min_ed
 
 
 if __name__ == "__main__":
@@ -92,31 +129,35 @@ if __name__ == "__main__":
     hand = ["3H", "4H"]
     print "Free? ", free_hand(hand)
 
+    ######### Test window computation
+    # coi = "5"
+    # print compute_window(coi)
+    # print "-"*10
+    #
+    # coi = "2"
+    # print compute_window(coi)
+    # print "-"*10
+    #
+    # coi = "8"
+    # print compute_window(coi)
+    # print "-"*10
+    #
+    # coi = "10"
+    # print compute_window(coi)
+    # print "-"*10
+    #
+    # coi = "Q"
+    # print compute_window(coi)
+    # print "-"*10
+    #
+    # coi = "K"
+    # print compute_window(coi)
+    # print "-"*10
+    #
+    # coi = "A"
+    # print compute_window(coi)
 
-    coi = "5"
-    print compute_window(coi)
-    print "-"*10
-
-    coi = "2"
-    print compute_window(coi)
-    print "-"*10
-
-    coi = "8"
-    print compute_window(coi)
-    print "-"*10
-
-    coi = "10"
-    print compute_window(coi)
-    print "-"*10
-
-    coi = "Q"
-    print compute_window(coi)
-    print "-"*10
-
-    coi = "K"
-    print compute_window(coi)
-    print "-"*10
-
-    coi = "A"
-    print compute_window(coi)
-
+    ######## Test edit distance computation
+    coi = "5H"
+    hands = {"1": ["2H", "3H", "4H"], "2": ["6D", "7D"]}
+    print compute_ed(hands, coi)
