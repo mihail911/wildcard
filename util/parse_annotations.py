@@ -1,5 +1,6 @@
 import csv
 import json
+import os
 import re
 
 columns = ["P1_HAND", "P2_HAND", "P1_LOC", "P2_LOC",
@@ -15,7 +16,7 @@ def categorize_label(speaker, pointer):
     :param ex:
     :return:
     """
-    if pointer == "NONE":
+    if pointer == "NONE" or pointer == "NULL":
         return 2
     # Speaker performs action
     if speaker in pointer:
@@ -33,6 +34,10 @@ def extract_card(entry):
     """
     pattern = r"EXISTS\((.*)\)"
     m = re.search(pattern, entry)
+    if m is None:
+        # Try CARD(5H,asdf) pattern
+        pattern = r"EXISTS\(([.]*)\,[.]*\)"
+        m = re.search(pattern, entry)
     return m.group(1)
 
 
@@ -87,7 +92,7 @@ def parse_annotation_file(file_path):
         reader = csv.reader(f, delimiter=",")
         # Should have 14 columns
         for line in reader:
-            if line[-1] != "":
+            if line[-1] != "" and line[-1].lower() != "pointer":
                 print "Good line: ", line[4:]
                 ex = parse_line(line)
                 print "Ex: ", ex
@@ -97,13 +102,28 @@ def parse_annotation_file(file_path):
     return utterances
 
 
+def parse_all(annotation_dir):
+    """
+    Parse all annotations in dir
+    :param annotation_dir:
+    :return:
+    """
+    utterances = []
+    for file in os.listdir(annotation_dir):
+        if not file.endswith("DS_Store") and (file.endswith("25_annotated.csv") or file.endswith("26_annotated.csv")):
+            print "File: ", file
+            file_path = os.path.join(annotation_dir, file)
+            utterance = parse_annotation_file(file_path)
+            utterances.append(utterance)
+
+    return utterances
+
+
+
 if __name__ == "__main__":
-    annotation_file_1 = "/Users/mihaileric/Documents/Research/cards/wild-card/data/annotated/cards_0000031_annotated.csv"
-    utterance = parse_annotation_file(annotation_file_1)
+    annotation_dir = "/Users/mihaileric/Documents/Research/cards/wild-card/data/annotated"
+    # Bad: 01, 04, 08
+    utterances = parse_all(annotation_dir)
 
-    annotation_file_2 = "/Users/mihaileric/Documents/Research/cards/wild-card/data/annotated/cards_0000001_annotated.csv"
-    utterance = parse_annotation_file(annotation_file_2)
 
-    # annotation_file_3 = "/Users/mihaileric/Documents/Research/cards/wild-card/data/annotated/cards_0000031_annotated.csv"
-    # utterance = parse_annotation_file(annotation_file_3)
 
