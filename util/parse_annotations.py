@@ -114,7 +114,7 @@ def parse_all(annotation_dir):
             print "File: ", file
             file_path = os.path.join(annotation_dir, file)
             utterance = parse_annotation_file(file_path)
-            utterances.append(utterance)
+            utterances.extend(utterance)
 
     return utterances
 
