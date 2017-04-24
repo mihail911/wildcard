@@ -1,6 +1,7 @@
 import numpy as np
 import os
 
+from collections import Counter
 from data_util import split_data
 from model_util import free_hand, compute_ed
 from parse_annotations import parse_all
@@ -35,8 +36,29 @@ class CGModel(object):
             ex = {}
             hands = {"1": d["P1_HAND"], "2": d["P2_HAND"]}
             coi = d["COI"]
-            opt, ed = compute_ed(hands, coi)
-            ex["EDIT"] = ed
+            _, ed, p1_ed, p2_ed = compute_ed(hands, coi)
+
+            # TODO: Include feature for mention of strategy?
+
+            if d["SPEAKER"] == "P1":
+                # Indicator function that addressee edit smaller than speaker
+                if p2_ed < p1_ed:
+                    ex["ADDRESSEE_EDIT"] = 1.
+
+                # Check if speaker/addressee have available space
+                if free_hand(d["P1_HAND"]):
+                    ex["SPEAKER_FREE"] = 1.
+                if free_hand(d["P2_HAND"]):
+                    ex["ADDRESSEE_FREE"] = 1.
+            else:
+                if p1_ed < p2_ed:
+                    ex["ADDRESSEE_EDIT"] = 1.
+
+                if free_hand(d["P2_HAND"]):
+                    ex["SPEAKER_FREE"] = 1.
+                if free_hand(d["P1_HAND"]):
+                    ex["ADDRESSEE_FREE"] = 1.
+
             label = d["POINTER"]
 
             x.append(ex)
@@ -82,7 +104,7 @@ class CGModel(object):
         recall = recall_score(gold_labels, predicted_labels)
         f1 = f1_score(gold_labels, predicted_labels)
 
-        print "Accuracy: {0}, Precision: {1}, F1: {2}".format(accuracy,
+        print "Accuracy: {0}, Recall: {1}, F1: {2}".format(accuracy,
                                                     recall, f1)
 
 
@@ -93,4 +115,4 @@ if __name__ == "__main__":
     train_data, test_data = split_data(utterances)
     model = CGModel()
     model.train(train_data)
-    model.predict(test_data)
+    model.evaluate(test_data)

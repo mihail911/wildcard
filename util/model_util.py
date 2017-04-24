@@ -119,7 +119,16 @@ def compute_ed(hands, coi):
             min_ed = ed
             optimal_window = w
 
-    return optimal_window, min_ed
+    # Given optimal window, compute edit distance for each player
+    p1_inter = optimal_window.intersection(set(hands["1"]))
+    p1_diff = set(hands["1"]).difference(optimal_window)
+    p1_edit = 2 * len(p1_diff) + (3 - len(p1_diff) - len(p1_inter))
+
+    p2_inter = optimal_window.intersection(set(hands["2"]))
+    p2_diff = set(hands["2"]).difference(optimal_window)
+    p2_edit = 2 * len(p2_diff) + (3 - len(p2_diff) - len(p2_inter))
+
+    return optimal_window, min_ed, p1_edit, p2_edit
 
 
 if __name__ == "__main__":
@@ -159,5 +168,5 @@ if __name__ == "__main__":
 
     ######## Test edit distance computation
     coi = "5H"
-    hands = {"1": ["2H", "3H", "4H"], "2": ["6D", "7D"]}
+    hands = {"1": ["2H", "3H", "4H"], "2": ["6H", "7H"]}
     print compute_ed(hands, coi)
