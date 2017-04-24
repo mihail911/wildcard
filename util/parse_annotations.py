@@ -11,19 +11,17 @@ columns = ["P1_HAND", "P2_HAND", "P1_LOC", "P2_LOC",
 def categorize_label(speaker, pointer):
     """
     Categorize output of pointer (P1:720) into bins to format for training model
-    Right now I bin as follows: (SPEAKER, ADDRESSEE, NONE) -> (0, 1, 2)
+    Right now I bin as follows: (SPEAKER or NONE, ADDRESSEE) -> (0, 1)
     Returns integer from bin above
     :param ex:
     :return:
     """
-    if pointer == "NONE" or pointer == "NULL":
-        return 2
-    # Speaker performs action
-    if speaker in pointer:
+    # Speaker performs action or utterance is not acted on
+    if speaker in pointer or pointer == "NONE" or pointer == "NULL":
         return 0
-    # Addressee performs action
-    else:
-        return 1
+
+    # Else addressee performs action as we would like
+    return 1
 
 
 def extract_card(entry):
@@ -32,11 +30,11 @@ def extract_card(entry):
     :param entry:
     :return:
     """
-    pattern = r"EXISTS\((.*)\)"
+    # Try CARD(5H,asdf) pattern
+    pattern = r"EXISTS\((.*)\,.*\)"
     m = re.search(pattern, entry)
     if m is None:
-        # Try CARD(5H,asdf) pattern
-        pattern = r"EXISTS\(([.]*)\,[.]*\)"
+        pattern = r"EXISTS\((.*)\)"
         m = re.search(pattern, entry)
     return m.group(1)
 
@@ -91,11 +89,11 @@ def parse_annotation_file(file_path):
     with open(file_path) as f:
         reader = csv.reader(f, delimiter=",")
         # Should have 14 columns
-        for line in reader:
+        for idx, line in enumerate(reader):
             if line[-1] != "" and line[-1].lower() != "pointer":
-                print "Good line: ", line[4:]
+                print "Good line: ", idx, " ", line[4:]
                 ex = parse_line(line)
-                print "Ex: ", ex
+                print "Ex: ", ex, " COI: ", ex["COI"]
                 print "\n"
                 utterances.append(ex)
 
@@ -110,12 +108,14 @@ def parse_all(annotation_dir):
     """
     utterances = []
     for file in os.listdir(annotation_dir):
-        if not file.endswith("DS_Store") and (file.endswith("25_annotated.csv") or file.endswith("26_annotated.csv")):
+        if not file.endswith("DS_Store") and not file.endswith("04_annotated.csv") \
+                and not file.endswith("08_annotated.csv") and not file.endswith("01_annotated.csv"):
             print "File: ", file
             file_path = os.path.join(annotation_dir, file)
             utterance = parse_annotation_file(file_path)
             utterances.extend(utterance)
 
+    print "Utterances: ", len(utterances)
     return utterances
 
 
