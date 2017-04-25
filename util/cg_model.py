@@ -38,28 +38,32 @@ class CGModel(object):
             coi = d["COI"]
             _, ed, p1_ed, p2_ed = compute_ed(hands, coi)
 
-            # TODO: Include feature for mention of strategy?
+            # Mentioned strategy
+            if len(d["P1_NEED"]) > 0 or len(d["P2_NEED"]) > 0:
+                ex["MENTIONED_STRATEGY"] = 1.
 
             if d["SPEAKER"] == "P1":
                 # Indicator function that addressee edit smaller than speaker
                 if p2_ed < p1_ed:
                     ex["ADDRESSEE_EDIT"] = 1.
+                # TODO: Whether to include negative feature?
 
                 # Check if speaker/addressee have available space
-                if free_hand(d["P1_HAND"]):
-                    ex["SPEAKER_FREE"] = 1.
-                if free_hand(d["P2_HAND"]):
-                    ex["ADDRESSEE_FREE"] = 1.
+                # if free_hand(d["P1_HAND"]):
+                #     ex["SPEAKER_FREE"] = 1.
+                # if free_hand(d["P2_HAND"]):
+                #     ex["ADDRESSEE_FREE"] = 1.
 
             else:
                 if p1_ed < p2_ed:
                     ex["ADDRESSEE_EDIT"] = 1.
 
-                if free_hand(d["P2_HAND"]):
-                    ex["SPEAKER_FREE"] = 1.
-                if free_hand(d["P1_HAND"]):
-                    ex["ADDRESSEE_FREE"] = 1.
+                # if free_hand(d["P2_HAND"]):
+                #     ex["SPEAKER_FREE"] = 1.
+                # if free_hand(d["P1_HAND"]):
+                #     ex["ADDRESSEE_FREE"] = 1.
 
+            #ex["EDIT"] = ed
             label = d["POINTER"]
 
             x.append(ex)

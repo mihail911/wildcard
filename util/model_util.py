@@ -102,6 +102,11 @@ def compute_ed(hands, coi):
     type = card_type(coi)
     coi = coi.strip("SDCH")
     windows = compute_window(coi)
+
+    # Clean hands first to clean out empty string
+    hands["1"] = [c for c in hands["1"] if c != ""]
+    hands["2"] = [c for c in hands["2"] if c != ""]
+
     all_hands = set(hands["1"] + hands["2"])
 
     min_ed = float("inf")
@@ -167,6 +172,6 @@ if __name__ == "__main__":
     # print compute_window(coi)
 
     ######## Test edit distance computation
-    coi = "5H"
-    hands = {"1": ["2H", "3H", "4H"], "2": ["6H", "7H"]}
+    coi = "QH"
+    hands = {"1": [""], "2": [""]}
     print compute_ed(hands, coi)

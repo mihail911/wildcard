@@ -60,7 +60,7 @@ def parse_line(line):
             ex[col] = hand
         elif col.endswith("KNOW") or col.endswith("NEED"):
             entries = val.split(";")
-            entries = [e.strip() for e in entries]
+            entries = [e.strip() for e in entries if e.strip() != ""]
             ex[col] = entries
         elif col == "POINTER":
             label = categorize_label(ex["SPEAKER"], val)
