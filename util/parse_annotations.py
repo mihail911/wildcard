@@ -108,8 +108,7 @@ def parse_all(annotation_dir):
     """
     utterances = []
     for file in os.listdir(annotation_dir):
-        if not file.endswith("DS_Store") and not file.endswith("04_annotated.csv") \
-                and not file.endswith("08_annotated.csv") and not file.endswith("01_annotated.csv"):
+        if not file.endswith("DS_Store"):
             print "File: ", file
             file_path = os.path.join(annotation_dir, file)
             utterance = parse_annotation_file(file_path)
@@ -121,8 +120,7 @@ def parse_all(annotation_dir):
 
 
 if __name__ == "__main__":
-    annotation_dir = "/Users/mihaileric/Documents/Research/cards/wild-card/data/annotated"
-    # Bad: 01, 04, 08
+    annotation_dir = "../data/annotated"
     utterances = parse_all(annotation_dir)
 
 

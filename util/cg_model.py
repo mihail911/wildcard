@@ -50,6 +50,7 @@ class CGModel(object):
                     ex["SPEAKER_FREE"] = 1.
                 if free_hand(d["P2_HAND"]):
                     ex["ADDRESSEE_FREE"] = 1.
+
             else:
                 if p1_ed < p2_ed:
                     ex["ADDRESSEE_EDIT"] = 1.
@@ -110,7 +111,7 @@ class CGModel(object):
 
 
 if __name__ == "__main__":
-    annotation_dir = "/Users/mihaileric/Documents/Research/cards/wild-card/data/annotated"
+    annotation_dir = "../data/annotated"
     utterances = parse_all(annotation_dir)
     train_data, test_data = split_data(utterances)
     model = CGModel()
