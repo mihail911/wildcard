@@ -1,5 +1,6 @@
 import numpy as np
 import os
+import random
 
 from collections import Counter
 from data_util import split_data
@@ -69,6 +70,7 @@ class CGModel(object):
             x.append(ex)
             y.append(label)
 
+        print "COUNTS: ", Counter(y)
         return x, y
 
 
@@ -78,6 +80,9 @@ class CGModel(object):
         :return:
         """
         x, y = self._featurize(data)
+        # Positive prior for class distribution
+        self.positive_prior = sum([1. for _ in y if _ == 1.]) / len(y)
+
         self.feature_vectorizer = DictVectorizer()
 
         # Feature vectors converted to matrix  (num_samples, num_features)
@@ -105,12 +110,26 @@ class CGModel(object):
         """
         x, gold_labels = self._featurize(test_data)
         predicted_labels, y_scores = self.predict(x)
+
+        baseline_labels = []
+        # baseline
+        for _ in range(len(gold_labels)):
+            if random.random() < self.positive_prior:
+                baseline_labels.append(1)
+            else:
+                baseline_labels.append(0)
+        baseline_accuracy = accuracy_score(gold_labels, baseline_labels)
+        baseline_recall = recall_score(gold_labels, baseline_labels)
+        baseline_f1 = f1_score(gold_labels, baseline_labels)
+
         accuracy = accuracy_score(gold_labels, predicted_labels)
         recall = recall_score(gold_labels, predicted_labels)
         f1 = f1_score(gold_labels, predicted_labels)
 
         print "Accuracy: {0}, Recall: {1}, F1: {2}".format(accuracy,
                                                     recall, f1)
+        print "Baseline Accuracy: {0}, Recall: {1}, F1: {2}".format(baseline_accuracy,
+                                                    baseline_recall, baseline_f1)
 
 
 
