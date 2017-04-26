@@ -6,10 +6,12 @@ from collections import Counter
 from data_util import split_data
 from model_util import free_hand, compute_ed
 from parse_annotations import parse_all
+from sklearn import tree
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score, f1_score, recall_score, precision_recall_curve, roc_curve
+from sklearn.linear_model import LogisticRegression, LinearRegression
+from sklearn.metrics import accuracy_score, f1_score, recall_score, precision_recall_curve, roc_curve, \
+                            confusion_matrix
 from sklearn.svm import SVC
 
 """
@@ -100,6 +102,7 @@ class CGModel(object):
         features_transformed = self.feature_vectorizer.transform(x)
         y_scores = self.classifier.predict_proba(features_transformed)
         y_scores = [y[1] for y in y_scores]
+
         return self.classifier.predict(features_transformed), y_scores
 
 
@@ -128,9 +131,12 @@ class CGModel(object):
 
         print "Accuracy: {0}, Recall: {1}, F1: {2}".format(accuracy,
                                                     recall, f1)
+        print "Confusion Matrix: ", confusion_matrix(gold_labels, predicted_labels)
+
+        print "=" * 10
         print "Baseline Accuracy: {0}, Recall: {1}, F1: {2}".format(baseline_accuracy,
                                                     baseline_recall, baseline_f1)
-
+        print "Baseline Confusion Matrix: ", confusion_matrix(gold_labels, baseline_labels)
 
 
 if __name__ == "__main__":
