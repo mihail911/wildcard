@@ -22,7 +22,7 @@ def split_data(utterances, split=[0.8, 0.2]):
 
 
 if __name__ == "__main__":
-    annotation_dir = "/Users/mihaileric/Documents/Research/cards/wild-card/data/annotated"
+    annotation_dir = "../data/annotated"
     utterances = parse_all(annotation_dir)
     train_data, test_data = split_data(utterances)
 
