@@ -26,7 +26,7 @@ def categorize_label(speaker, pointer):
 
 def extract_card(entry):
     """
-    Extract card from entry. Expects pattern of form NEED("ax")
+    Extract card from entry. Expects pattern of form NEED/EXISTS("ax")
     :param entry:
     :return:
     """
@@ -36,6 +36,16 @@ def extract_card(entry):
     if m is None:
         pattern = r"EXISTS\((.*)\)"
         m = re.search(pattern, entry)
+
+    # Go through NEED type
+    if m is None:
+        pattern = r"NEED\((.*)\)"
+        m = re.search(pattern, entry)
+
+    if m is None:
+        pattern = r"NEED\((.*)\,.*\)"
+        m = re.search(pattern, entry)
+
     return m.group(1)
 
 
@@ -88,14 +98,20 @@ def parse_annotation_file(file_path):
     utterances = []
     with open(file_path) as f:
         reader = csv.reader(f, delimiter=",")
-        # Should have 14 columns
+        dialogue = ""
         for idx, line in enumerate(reader):
             if line[-1] != "" and line[-1].lower() != "pointer":
                 print "Good line: ", idx, " ", line[4:]
                 ex = parse_line(line)
                 print "Ex: ", ex, " COI: ", ex["COI"]
+                # Add dialogue context to ex, including current chat message
+                dialogue += line[3] + " "
+                ex["DIALOGUE"] = dialogue
                 print "\n"
                 utterances.append(ex)
+            elif line[2] == "CHAT_MESSAGE_PREFIX":
+                # Append utterance to dialogue context
+                dialogue += line[3] + " "
 
     return utterances
 

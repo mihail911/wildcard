@@ -2,7 +2,7 @@ import numpy as np
 
 from collections import Counter
 from model_util import free_hand, compute_ed
-from parse_annotations import parse_all
+from parse_annotations import parse_all, extract_card
 from scipy import stats
 from sklearn import linear_model
 from sklearn.feature_extraction import DictVectorizer
@@ -44,7 +44,7 @@ class LinearCGModel(object):
         :param data:
         :return:
         """
-        x, y = [], []
+        x, x_text, y = [], [], []
         for d in data:
             ex = {}
             hands = {"1": d["P1_HAND"], "2": d["P2_HAND"]}
@@ -55,22 +55,38 @@ class LinearCGModel(object):
             if len(d["P1_NEED"]) > 0 or len(d["P2_NEED"]) > 0:
                 ex["MENTIONED_STRATEGY"] = 1.
 
+            # More fine-grained feature for card mentioned in strategy
+            all_needed = d["P1_NEED"] + d["P2_NEED"]
+            all_needed = [extract_card(n) for n in all_needed]
+            mentioned = False
+            for c in all_needed:
+                if c == d["COI"]:
+                    mentioned = True
+                # Wild card suit
+                if c[0] == "X":
+                    if c[1] == d["COI"][-1]:
+                        mentioned = True
+
+            if mentioned:
+                ex["SPECIFIC_STRATEGY"] = 1.
+
             if d["SPEAKER"] == "P1":
                 # Indicator function that addressee edit smaller than speaker
                 if p2_ed < p1_ed:
                     ex["ADDRESSEE_EDIT"] = 1.
-                # TODO: Whether to include negative feature?
+
             else:
                 if p1_ed < p2_ed:
                     ex["ADDRESSEE_EDIT"] = 1.
 
-
-            #ex["EDIT"] = ed
+            ex["EDIT"] = ed
             label = d["POINTER"]
 
+            x_text.append(d["DIALOGUE"])
             x.append(ex)
             y.append(label)
 
+        print "COUNTS: ", Counter(y)
         return x, y
 
 
