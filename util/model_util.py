@@ -133,7 +133,18 @@ def compute_ed(hands, coi):
     p2_diff = set(hands["2"]).difference(optimal_window)
     p2_edit = 2 * len(p2_diff) + (3 - len(p2_diff) - len(p2_inter))
 
-    return optimal_window, min_ed, p1_edit, p2_edit
+    # Check if all cards in window
+    p1_all = True
+    for c in hands["1"]:
+        if c not in optimal_window:
+            p1_all = False
+
+    p2_all = True
+    for c in hands["2"]:
+        if c not in optimal_window:
+            p2_all = False
+
+    return optimal_window, min_ed, p1_edit, p2_edit, [p1_all, p2_all]
 
 
 if __name__ == "__main__":

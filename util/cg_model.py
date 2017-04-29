@@ -12,6 +12,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.linear_model import LogisticRegression, LinearRegression
 from sklearn.metrics import accuracy_score, f1_score, recall_score, precision_recall_curve, roc_curve, \
                             confusion_matrix
+from sklearn.pipeline import FeatureUnion
 from sklearn.svm import SVC
 
 """
@@ -26,6 +27,8 @@ class CGModel(object):
     """
     def __init__(self):
         self.classifier = LogisticRegression()
+        self.feature_union = FeatureUnion([("count", CountVectorizer()),
+                                           ("feat", DictVectorizer())])
 
 
     def _featurize(self, data):
@@ -39,11 +42,11 @@ class CGModel(object):
             ex = {}
             hands = {"1": d["P1_HAND"], "2": d["P2_HAND"]}
             coi = d["COI"]
-            _, ed, p1_ed, p2_ed = compute_ed(hands, coi)
+            window, ed, p1_ed, p2_ed, c_all = compute_ed(hands, coi)
 
             # Mentioned strategy
-            if len(d["P1_NEED"]) > 0 or len(d["P2_NEED"]) > 0:
-                ex["MENTIONED_STRATEGY"] = 1.
+            # if len(d["P1_NEED"]) > 0 or len(d["P2_NEED"]) > 0:
+            #     ex["MENTIONED_STRATEGY"] = 1.
 
             # More fine-grained feature for card mentioned in strategy
             all_needed = d["P1_NEED"] + d["P2_NEED"]
@@ -60,17 +63,32 @@ class CGModel(object):
             if mentioned:
                 ex["SPECIFIC_STRATEGY"] = 1.
 
-            if d["SPEAKER"] == "P1":
-                # Indicator function that addressee edit smaller than speaker
-                if p2_ed < p1_ed:
-                    ex["ADDRESSEE_EDIT"] = 1.
+            # if d["SPEAKER"] == "P1":
+            #     # Indicator function that addressee edit smaller than speaker
+            #     # if p2_ed < p1_ed:
+            #     #     ex["ADDRESSEE_EDIT"] = 1.
+            #     # if c_all[0]:
+            #     #     print "HERE"
+            #     #     ex["A_SHOULD_ACT"] = 1.
+            #     # if free_hand(hands["2"]):
+            #     #     ex["FREE"] = 1.
+            #
+            # else:
+            #     # if p1_ed < p2_ed:
+            #     #     ex["ADDRESSEE_EDIT"] = 1.
+            #     # if c_all[1]:
+            #     #     print "HERE"
+            #     #     ex["A_SHOULD_ACT"] = 1.
+            #     # if free_hand(hands["1"]):
+            #     #     ex["FREE"] = 1.
 
-            else:
-                if p1_ed < p2_ed:
-                    ex["ADDRESSEE_EDIT"] = 1.
+            extra = window.intersection(hands["1"] + hands["2"])
 
+            if len(extra) == 0:
+                ex["WINDOW"] = 1.
 
-            #ex["EDIT"] = ed
+            # if p1_ed + p2_ed < 3:
+            #     ex["EDIT"] = 1.
             label = d["POINTER"]
 
             x_text.append(d["DIALOGUE"])
@@ -91,14 +109,14 @@ class CGModel(object):
         self.positive_prior = sum([1. for _ in y if _ == 1.]) / len(y)
 
         self.feature_vectorizer = DictVectorizer()
-        self.count_vectorizer = CountVectorizer(ngram_range=(1,1))
+        # self.count_vectorizer = CountVectorizer(ngram_range=(1,2))
 
         # Feature vectors converted to matrix  (num_samples, num_features)
         feature_vec_transform = self.feature_vectorizer.fit_transform(x)
-        count_vec_transform = self.count_vectorizer.fit_transform(x_text)
+        #count_vec_transform = self.count_vectorizer.fit_transform(x_text)
 
+        #self.classifier.fit(feature_vec_transform, np.array(y))
         self.classifier.fit(feature_vec_transform, np.array(y))
-        #self.classifier.fit(count_vec_transform, np.array(y))
 
 
     def predict(self, x, x_text):
@@ -109,8 +127,9 @@ class CGModel(object):
         """
         # Transform features to appropriate format
         features_transformed = self.feature_vectorizer.transform(x)
-        count_vec_transformed = self.count_vectorizer.transform(x_text)
+        #count_vec_transformed = self.count_vectorizer.transform(x_text)
 
+        y_scores = None
         y_scores = self.classifier.predict_proba(features_transformed)
         y_scores = [y[1] for y in y_scores]
 
