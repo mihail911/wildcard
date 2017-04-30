@@ -4,7 +4,7 @@ import random
 
 from collections import Counter
 from data_util import split_data
-from model_util import free_hand, compute_ed
+from model_util import free_hand, compute_ed , free_hand_2
 from parse_annotations import parse_all, extract_card
 from sklearn import tree
 from sklearn.feature_extraction import DictVectorizer
@@ -26,7 +26,8 @@ class CGModel(object):
     Model that uses common ground to predict player actions
     """
     def __init__(self):
-        self.classifier = LogisticRegression()
+        #self.classifier = LogisticRegression()
+        self.classifier = tree.DecisionTreeClassifier(random_state=0, criterion="entropy" )
         self.feature_union = FeatureUnion([("count", CountVectorizer()),
                                            ("feat", DictVectorizer())])
 
@@ -38,19 +39,42 @@ class CGModel(object):
         :return:
         """
         x, x_text, y = [], [], []
-        for d in data:
+
+        for k,d in enumerate(data):
+
             ex = {}
             hands = {"1": d["P1_HAND"], "2": d["P2_HAND"]}
             coi = d["COI"]
-            window, ed, p1_ed, p2_ed, c_all = compute_ed(hands, coi)
 
-            # Mentioned strategy
-            # if len(d["P1_NEED"]) > 0 or len(d["P2_NEED"]) > 0:
-            #     ex["MENTIONED_STRATEGY"] = 1.
 
+            ## HAND IMBALANCE FEATURE 
+            full_speaker_hand = None
+            full_addressee_hand = None
+            if d["SPEAKER"] == "P1":
+                full_speaker_hand = 1 if not free_hand_2(hands["1"])  else 0
+                full_addressee_hand = 1 if not free_hand_2(hands["2"]) else 0 
+            else:
+                full_speaker_hand = 1 if not free_hand_2(hands["2"]) else 0
+                full_addressee_hand = 1 if not free_hand_2(hands["1"]) else 0
+
+            ex["HAND_IMBALANCE"] = 1 if (full_speaker_hand and not full_addressee_hand) else 0
+
+            ## SPEAKER FULL HAND FEATURE
+            # smart free hand feature
+            '''
+            if d["SPEAKER"] == "P1":
+                ex["FULL_SPEAKER_HAND"] = 1 if not free_hand_2(hands["1"])  else 0
+            else:
+                ex["FULL_SPEAKER_HAND"] = 1 if not free_hand_2(hands["2"]) else 0
+            '''
+
+            '''
             # More fine-grained feature for card mentioned in strategy
             all_needed = d["P1_NEED"] + d["P2_NEED"]
             all_needed = [extract_card(n) for n in all_needed]
+
+            #print "all needed", all_needed
+
             mentioned = False
             for c in all_needed:
                 if c == d["COI"]:
@@ -62,33 +86,19 @@ class CGModel(object):
 
             if mentioned:
                 ex["SPECIFIC_STRATEGY"] = 1.
+            '''
 
-            # if d["SPEAKER"] == "P1":
-            #     # Indicator function that addressee edit smaller than speaker
-            #     # if p2_ed < p1_ed:
-            #     #     ex["ADDRESSEE_EDIT"] = 1.
-            #     # if c_all[0]:
-            #     #     print "HERE"
-            #     #     ex["A_SHOULD_ACT"] = 1.
-            #     # if free_hand(hands["2"]):
-            #     #     ex["FREE"] = 1.
-            #
-            # else:
-            #     # if p1_ed < p2_ed:
-            #     #     ex["ADDRESSEE_EDIT"] = 1.
-            #     # if c_all[1]:
-            #     #     print "HERE"
-            #     #     ex["A_SHOULD_ACT"] = 1.
-            #     # if free_hand(hands["1"]):
-            #     #     ex["FREE"] = 1.
+            '''
+            if d["SPEAKER"] == "P1":
+                # Indicator function that addressee edit smaller than speaker
+                if p2_ed < p1_ed:
+                    ex["ADDRESSEE_EDIT"] = 1.
 
-            extra = window.intersection(hands["1"] + hands["2"])
-
-            if len(extra) == 0:
-                ex["WINDOW"] = 1.
-
-            # if p1_ed + p2_ed < 3:
-            #     ex["EDIT"] = 1.
+            else:
+                if p1_ed < p2_ed:
+                    ex["ADDRESSEE_EDIT"] = 1.
+            '''
+            #ex["EDIT"] = ed
             label = d["POINTER"]
 
             x_text.append(d["DIALOGUE"])
@@ -96,8 +106,7 @@ class CGModel(object):
             y.append(label)
 
         print "COUNTS: ", Counter(y)
-        return x, x_text, y
-
+        return x,x_text,y
 
     def train(self, data):
         """
@@ -186,7 +195,7 @@ class CGModel(object):
 
 
 if __name__ == "__main__":
-    annotation_dir = "../data/annotated"
+    annotation_dir = "../data/annotations_reworked"
     utterances = parse_all(annotation_dir)
     train_data, test_data = split_data(utterances)
     model = CGModel()
