@@ -18,6 +18,9 @@ card_vals = range(1, 14)
 MAX_CARD = 13
 
 
+
+all_strategies = [ set([ x if x <= 13 else x - 13 for x in range(y,y+6) ]) for y in range(1,14) ]
+
 def free_hand(hand):
     """
     Return as boolean whether or not a player has available
@@ -26,6 +29,32 @@ def free_hand(hand):
     :return:
     """
     return len(hand) < 3
+
+def free_hand_2(hand):
+    """
+    Return as boolean whether or not a player has available
+    space in their hand (i.e. less than 3 of the same suit in a possible winning window defined in all_strategies) 
+    :param hand:
+    :return:
+    """
+    if len(hand) < 3:
+        return True
+    else:
+        suits = set( [card.strip()[-1] for card in hand] )  
+        #print "suits in hand" , suits 
+        if len(suits) > 1:
+            return True
+        else:
+            # get numbers associated 
+            card_vals = set([ card_mapping[card.strip()[:-1]] for card in hand ])
+
+            #print "card values" , card_vals
+            strategy_found = True
+            for strategy in all_strategies:
+                if len(strategy.intersection(card_vals)) == 3:
+                    strategy_found = False
+                    break
+            return strategy_found
 
 
 def compute_window(coi):
@@ -148,11 +177,21 @@ def compute_ed(hands, coi):
 
 
 if __name__ == "__main__":
+
+    '''
     hand = ["3H", "4H", "5H"]
-    print "Free? ", free_hand(hand)
+    #print "Free? ", free_hand(hand)
 
     hand = ["3H", "4H"]
-    print "Free? ", free_hand(hand)
+    #print "Free? ", free_hand(hand)
+
+    hand = ["3H","4H","6S"]
+    print "Free? ", free_hand_2(hand)
+
+    hand = ["3H" , "4H" , "10H" ]
+    print "Free?" , free_hand_2(hand)
+    '''
+    print all_strategies
 
     ######### Test window computation
     # coi = "5"
@@ -183,6 +222,8 @@ if __name__ == "__main__":
     # print compute_window(coi)
 
     ######## Test edit distance computation
+    '''
     coi = "QH"
     hands = {"1": [""], "2": [""]}
     print compute_ed(hands, coi)
+    '''
