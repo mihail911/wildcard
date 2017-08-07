@@ -1,8 +1,7 @@
-import pygame , sys , os
-import numpy as np
+import pygame , sys  os
 from pygame.locals import *
 from game import *
-from utils import Color
+from wildcard.util.utils import Color
 
 class CardsGame:
 
@@ -226,7 +225,7 @@ class CardsGame:
             pygame.display.update()
 
 def main():
-    g = CardsGame("data/CardsCorpus-v02/transcripts/01/cards_0000002.csv","Game 2")
+    g = CardsGame("data/CardsCorpus-v02/transcripts/01/cards_0000001.csv","Game 2")
     #print [ move.move_type for move in g.game.all_moves[ : 10 ] ]
     g.run()
 

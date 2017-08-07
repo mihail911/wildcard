@@ -5,7 +5,6 @@ import re
 from cards import Tokenizer
 
 
-
 class Color:
    """
    Basic utility for colored printing
@@ -28,8 +27,10 @@ def mentions_cards(utterance, tokenizer, card_expressions):
    """
    Return a bool indicating whether the given utterance
    has a mention of a card
-   :param utterance:
-   :return:
+   :param utterance: Utterance to parse
+   :param tokenizer: Specifies how to parse utterance
+   :param card_expressions: Iterable of cards to check for in utterance
+   :return: Bool whether any of `card expressions` is contained in utt.
    """
    tokens = set(tokenizer.tokenize(utterance.lower()))
    for c in card_expressions:
@@ -43,7 +44,7 @@ def mentions_cards(utterance, tokenizer, card_expressions):
 def card_expressions():
    """
    Set of all possible card referring expressions
-   :return:
+   :return: Set of all variants of ways to refer to cards
    """
    card_numbers = ["two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "jack", "queen", "king", "ace"]
    card_combinations = []

@@ -26,8 +26,8 @@ class CGModel(object):
     Model that uses common ground to predict player actions
     """
     def __init__(self):
-        #self.classifier = LogisticRegression()
-        self.classifier = tree.DecisionTreeClassifier(random_state=0, criterion="entropy" )
+        self.classifier = LogisticRegression()
+        #self.classifier = tree.DecisionTreeClassifier(random_state=0, criterion="entropy" )
         self.feature_union = FeatureUnion([("count", CountVectorizer()),
                                            ("feat", DictVectorizer())])
 
@@ -45,7 +45,7 @@ class CGModel(object):
             ex = {}
             hands = {"1": d["P1_HAND"], "2": d["P2_HAND"]}
             coi = d["COI"]
-
+            window, ed, p1_ed, p2_ed, c_all = compute_ed(hands, coi)
 
             ## HAND IMBALANCE FEATURE 
             full_speaker_hand = None
@@ -57,7 +57,7 @@ class CGModel(object):
                 full_speaker_hand = 1 if not free_hand_2(hands["2"]) else 0
                 full_addressee_hand = 1 if not free_hand_2(hands["1"]) else 0
 
-            ex["HAND_IMBALANCE"] = 1 if (full_speaker_hand and not full_addressee_hand) else 0
+            #ex["HAND_IMBALANCE"] = 1 if (full_speaker_hand and not full_addressee_hand) else 0
 
             ## SPEAKER FULL HAND FEATURE
             # smart free hand feature
@@ -70,10 +70,12 @@ class CGModel(object):
 
             '''
             # More fine-grained feature for card mentioned in strategy
-            all_needed = d["P1_NEED"] + d["P2_NEED"]
-            all_needed = [extract_card(n) for n in all_needed]
+
 
             #print "all needed", all_needed
+            '''
+            all_needed = d["P1_NEED"] + d["P2_NEED"]
+            all_needed = [extract_card(n) for n in all_needed]
 
             mentioned = False
             for c in all_needed:
@@ -84,21 +86,22 @@ class CGModel(object):
                     if c[1] == d["COI"][-1]:
                         mentioned = True
 
-            if mentioned:
-                ex["SPECIFIC_STRATEGY"] = 1.
-            '''
+            # if mentioned:
+            #     ex["SPECIFIC_STRATEGY"] = 1.
 
-            '''
-            if d["SPEAKER"] == "P1":
-                # Indicator function that addressee edit smaller than speaker
-                if p2_ed < p1_ed:
-                    ex["ADDRESSEE_EDIT"] = 1.
 
-            else:
-                if p1_ed < p2_ed:
-                    ex["ADDRESSEE_EDIT"] = 1.
-            '''
-            #ex["EDIT"] = ed
+            # if d["SPEAKER"] == "P1":
+            #     # Indicator function that addressee edit smaller than speaker
+            #     # if p2_ed < p1_ed:
+            #     #     ex["ADDRESSEE_EDIT"] = 1.
+            #     if c_all[0]:
+            #         ex["A_SHOULD_ACT"] = 1.
+            # else:
+            #     # if p1_ed < p2_ed:
+            #     #     ex["ADDRESSEE_EDIT"] = 1.
+            #     if c_all[1]:
+            #         ex["A_SHOULD_ACT"] = 1.
+            ex["EDIT"] = ed
             label = d["POINTER"]
 
             x_text.append(d["DIALOGUE"])
@@ -118,14 +121,14 @@ class CGModel(object):
         self.positive_prior = sum([1. for _ in y if _ == 1.]) / len(y)
 
         self.feature_vectorizer = DictVectorizer()
-        # self.count_vectorizer = CountVectorizer(ngram_range=(1,2))
+        self.count_vectorizer = CountVectorizer(ngram_range=(1,2))
 
         # Feature vectors converted to matrix  (num_samples, num_features)
-        feature_vec_transform = self.feature_vectorizer.fit_transform(x)
-        #count_vec_transform = self.count_vectorizer.fit_transform(x_text)
+        #feature_vec_transform = self.feature_vectorizer.fit_transform(x)
+        count_vec_transform = self.count_vectorizer.fit_transform(x_text)
 
+        self.classifier.fit(count_vec_transform, np.array(y))
         #self.classifier.fit(feature_vec_transform, np.array(y))
-        self.classifier.fit(feature_vec_transform, np.array(y))
 
 
     def predict(self, x, x_text):
@@ -135,19 +138,19 @@ class CGModel(object):
         :return:
         """
         # Transform features to appropriate format
-        features_transformed = self.feature_vectorizer.transform(x)
-        #count_vec_transformed = self.count_vectorizer.transform(x_text)
+        #features_transformed = self.feature_vectorizer.transform(x)
+        count_vec_transformed = self.count_vectorizer.transform(x_text)
 
         y_scores = None
-        y_scores = self.classifier.predict_proba(features_transformed)
-        y_scores = [y[1] for y in y_scores]
+        #y_scores = self.classifier.predict_proba(features_transformed)
+        #y_scores = [y[1] for y in y_scores]
 
         # Scores using unigram features
         y_scores_uni = None
-        # y_scores_uni = self.classifier.predict_proba(count_vec_transformed)
-        # y_scores_uni = [y[1] for y in y_scores_uni]
+        y_scores_uni = self.classifier.predict_proba(count_vec_transformed)
+        y_scores_uni = [y[1] for y in y_scores_uni]
 
-        return self.classifier.predict(features_transformed), y_scores, y_scores_uni
+        return self.classifier.predict(count_vec_transformed), y_scores, y_scores_uni
 
 
     def evaluate(self, test_data):

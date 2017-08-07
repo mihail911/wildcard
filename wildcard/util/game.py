@@ -1,14 +1,12 @@
 import copy
 import csv
 import json
-import numpy as np
-import pprint
-import os
-
-from cards import Tokenizer
 from collections import defaultdict
-from scipy.spatial.distance import cityblock
-from utils import card_expressions, mentions_cards
+
+import numpy as np
+import os
+from cards import Tokenizer
+from wildcard.util.utils import card_expressions, mentions_cards
 
 
 """
