@@ -1,8 +1,7 @@
 import itertools
 import os
-import re
 
-from cards import Tokenizer
+from wildcard.util.cards import Tokenizer
 
 
 class Color:
@@ -61,6 +60,7 @@ def card_expressions():
 
 
 if __name__ == "__main__":
+   # TODO: Move this to tests directory
    from game import Game
 
    transcript = os.path.join(os.path.dirname(os.path.abspath(".")), "data/CardsCorpus-v02/transcripts/01/cards_0000001.csv")

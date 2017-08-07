@@ -3,12 +3,12 @@ import numpy as np
 import os
 import re
 
-from cards import Tokenizer
-from game import Game
+from wildcard.util.cards import Tokenizer
+from wildcard.util.game import Game
 
 
 """
-Basic stats on dataset
+Script for computing basic stats on dataset
 """
 
 num_intervals = 5
@@ -16,7 +16,7 @@ num_intervals = 5
 def process_all(data_dir):
     """
     Process all transcripts
-    :param data_dir:
+    :param data_dir: Contains all data to be processed
     :return:
     """
     # Tokenizer that treats things like '4 H', 'four of hearts',
@@ -80,8 +80,8 @@ def process_all(data_dir):
 def process_transcript(transcript_file, tokenizer):
     """
     Process a single transcript file
-    :param transcript_file:
-    :param tokenizer:
+    :param transcript_file: Path of transcript file to process
+    :param tokenizer: Tokenizer for how to split up data utterances
     :return:
     """
     game = Game(transcript_file)

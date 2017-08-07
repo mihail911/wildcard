@@ -1,7 +1,10 @@
 import csv
-import json
 import os
 import re
+
+"""
+Utilities for parsing our transcript annotations
+"""
 
 columns = ["P1_HAND", "P2_HAND", "P1_LOC", "P2_LOC",
                 "P1_KNOW", "P2_KNOW", "P1_NEED", "P2_NEED", "P1_ABLE", "P2_ABLE",
@@ -13,8 +16,9 @@ def categorize_label(speaker, pointer):
     Categorize output of pointer (P1:720) into bins to format for training model
     Right now I bin as follows: (SPEAKER or NONE, ADDRESSEE) -> (0, 1)
     Returns integer from bin above
-    :param ex:
-    :return:
+    :param speaker: Name for given player
+    :param pointer: Line number where action reference points to
+    :return: Int indicating bin of label
     """
     # Speaker performs action or utterance is not acted on
     if speaker in pointer or pointer == "NONE" or pointer == "NULL":
@@ -27,8 +31,8 @@ def categorize_label(speaker, pointer):
 def extract_card(entry):
     """
     Extract card from entry. Expects pattern of form NEED/EXISTS("ax")
-    :param entry:
-    :return:
+    :param entry: String to extract from
+    :return: Card extracted
     """
     # Try CARD(5H,asdf) pattern
     pattern = r"EXISTS\((.*)\,.*\)"
@@ -52,7 +56,7 @@ def extract_card(entry):
 def parse_line(line):
     """
     Parse line, represented as list
-    :param entry:
+    :param entry: Line in list format
     :return:
     """
     ex = {}
@@ -92,7 +96,7 @@ def parse_line(line):
 def parse_annotation_file(file_path):
     """
     Parse given annotation file path
-    :param file_path:
+    :param file_path: Parse all lines in given file
     :return:
     """
     utterances = []
@@ -119,7 +123,7 @@ def parse_annotation_file(file_path):
 def parse_all(annotation_dir):
     """
     Parse all annotations in dir
-    :param annotation_dir:
+    :param annotation_dir: Data dir to parse
     :return:
     """
     utterances = []

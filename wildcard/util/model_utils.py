@@ -175,7 +175,7 @@ def compute_ed(hands, coi):
 
     return optimal_window, min_ed, p1_edit, p2_edit, [p1_all, p2_all]
 
-
+# TODO: Move this to test subdir
 if __name__ == "__main__":
 
     '''
