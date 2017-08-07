@@ -2,6 +2,7 @@
 Model utilities for calculating features, etc.
 """
 
+MAX_CARD = 13
 card_mapping = {"1": 1,
                 "2": 2, "3": 3, "4": 4,
                 "5": 5, "6": 6, "7": 7,
@@ -9,32 +10,30 @@ card_mapping = {"1": 1,
                 "J": 11, "Q": 12, "K": 13,
                 "A": 1
                 }
-
 inverse_mapping = {1: "A", 2: "2", 3: "3", 4: "4", 5: "5",
                    6: "6", 7: "7", 8: "8", 9: "9", 10: "10",
                    11: "J", 12: "Q", 13: "K"}
-
 card_vals = range(1, 14)
-MAX_CARD = 13
-
-
-
 all_strategies = [ set([ x if x <= 13 else x - 13 for x in range(y,y+6) ]) for y in range(1,14) ]
+
 
 def free_hand(hand):
     """
     Return as boolean whether or not a player has available
     space in their hand (i.e. less than 3 cards)
-    :param hand:
-    :return:
+    :param hand: List of cards in hand
+    :return: Bool whether player has free space
     """
     return len(hand) < 3
+
 
 def free_hand_2(hand):
     """
     Return as boolean whether or not a player has available
-    space in their hand (i.e. less than 3 of the same suit in a possible winning window defined in all_strategies) 
-    :param hand:
+    space in their hand (i.e. less than 3 of the same suit in a possible
+    winning window defined in all_strategies). More complex definition from
+    above.
+    :param hand: List of cards in hand
     :return:
     """
     if len(hand) < 3:
@@ -61,8 +60,8 @@ def compute_window(coi):
     """
     Compute windows of potential straights around given card.
     Note suffixes already stripped off
-    :param coi:
-    :return:
+    :param coi: Card of interest
+    :return: Return lists of winnings hands
     """
     card_val = card_mapping[coi]
     windows = []
@@ -105,8 +104,8 @@ def compute_window(coi):
 
 def card_type(coi):
     """
-    Extract card type from card ("H", "C", "D", S")
-    :param coi:
+    Extract card type from card ("H", "C", "D", "S")
+    :param coi: Card of interest
     :return:
     """
     return coi[-1]
@@ -123,8 +122,8 @@ def append_suffix(cards, type):
 def compute_ed(hands, coi):
     """
     Compute edit distance for both players given their hands.
-    "Hands" stores cards for each player in dict: {"1":[3H,4H,5H], "2":[6H,7H]}
-    :param hands:
+    :param hands: "Hands" stores cards for each player in dict:
+    {"1":[3H,4H,5H], "2":[6H,7H]}
     :param coi: card-of-interest
     :return:
     """
@@ -174,6 +173,7 @@ def compute_ed(hands, coi):
             p2_all = False
 
     return optimal_window, min_ed, p1_edit, p2_edit, [p1_all, p2_all]
+
 
 # TODO: Move this to test subdir
 if __name__ == "__main__":

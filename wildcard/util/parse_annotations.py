@@ -6,9 +6,8 @@ import re
 Utilities for parsing our transcript annotations
 """
 
-columns = ["P1_HAND", "P2_HAND", "P1_LOC", "P2_LOC",
-                "P1_KNOW", "P2_KNOW", "P1_NEED", "P2_NEED", "P1_ABLE", "P2_ABLE",
-                "CARD_LOC", "POINTER"]
+columns = ["P1_HAND", "P2_HAND", "P1_LOC", "P2_LOC", "P1_KNOW", "P2_KNOW",
+            "P1_NEED", "P2_NEED", "P1_ABLE", "P2_ABLE", "CARD_LOC", "POINTER"]
 
 
 def categorize_label(speaker, pointer):

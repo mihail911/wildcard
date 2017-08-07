@@ -1,6 +1,6 @@
 import random
 
-from parse_annotations import parse_all
+from wildcard.util.parse_annotations import parse_all
 
 """
 Variety of utils for preparing data for model
