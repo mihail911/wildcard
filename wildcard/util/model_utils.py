@@ -214,6 +214,3 @@ def card_expressions():
       card_suits.append(suit + "s")
 
    return set(card_numbers + card_combinations + card_suits)
-
-
-

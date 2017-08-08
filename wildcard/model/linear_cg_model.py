@@ -107,11 +107,3 @@ class LinearCGModel(object):
         f, p = f_regression(feature_vec_transform, np.array(y), center=False)
         print "F: ", f
         print "P: ", p
-
-
-# TODO: Move to test subdir
-if __name__ == "__main__":
-    annotation_dir = "../data/annotated"
-    utterances = parse_all(annotation_dir)
-    model = LinearCGModel()
-    model.train(utterances)

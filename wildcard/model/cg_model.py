@@ -3,7 +3,7 @@ import os
 import random
 
 from collections import Counter
-from wildcard.util.data_util import split_data
+from wildcard.util.data_utils import split_data
 from wildcard.util.model_utils import compute_ed
 from wildcard.util.model_utils import free_hand
 from wildcard.util.model_utils import free_hand_2
@@ -182,13 +182,3 @@ class CGModel(object):
         print "Maj Baseline Accuracy: {0}, Recall: {1}, F1: {2}".format(maj_accuracy,
                                                     maj_recall, maj_f1)
         print "Maj Baseline Confusion Matrix: ", confusion_matrix(gold_labels, maj_labels)
-
-
-# TODO: Move to test dir?
-if __name__ == "__main__":
-    annotation_dir = "../data/annotations_reworked"
-    utterances = parse_all(annotation_dir)
-    train_data, test_data = split_data(utterances)
-    model = CGModel()
-    model.train(train_data)
-    model.evaluate(test_data)

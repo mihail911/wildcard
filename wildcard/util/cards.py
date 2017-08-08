@@ -301,5 +301,3 @@ class Tokenizer:
         is a list of strings or unicode instances.
         """
         return Tokenizer.token_re.findall(s)
-
-    
