@@ -138,9 +138,5 @@ def parse_all(annotation_dir):
 
 
 
-if __name__ == "__main__":
-    annotation_dir = "../data/annotated"
-    utterances = parse_all(annotation_dir)
-
 
 

@@ -19,12 +19,3 @@ def split_data(utterances, split=[0.8, 0.2]):
     train = utterances[:bound]
     test = utterances[bound:]
     return train, test
-
-
-if __name__ == "__main__":
-    annotation_dir = "../data/annotated"
-    utterances = parse_all(annotation_dir)
-    train_data, test_data = split_data(utterances)
-
-    print "Train: ", train_data
-    print "Test: ", test_data
