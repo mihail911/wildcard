@@ -3,10 +3,10 @@ import pygame
 import sys
 
 from pygame.locals import *
-from wildcard.util.game import Game
-from wildcard.util.game import GameState
-from wildcard.util.game import Move
-from wildcard.util.utils import Color
+from wildcard.model.game import Game
+from wildcard.model.game import GameState
+from wildcard.model.game import Move
+from wildcard.util.color import Color
 
 """
 Runs simulation of card game for a given transcript

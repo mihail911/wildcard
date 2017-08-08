@@ -6,8 +6,8 @@ import os
 
 from collections import defaultdict
 from wildcard.util.cards import Tokenizer
-from wildcard.util.utils import card_expressions
-from wildcard.util.utils import mentions_cards
+from wildcard.util.model_utils import card_expressions
+from wildcard.util.model_utils import mentions_cards
 
 """
 Stores an instance of a game corresponding to a transcript
