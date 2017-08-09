@@ -10,7 +10,7 @@ Wild Card
   
    
    
-  In this paper we performed a systematic study of the various indirect command types present in the [Cards Corpus](http://cardscorpus.christopherpotts.net/). We developed models demonstrating that well-formulated notions of common ground discourse can be useful for pragmatically disambiguating certain dialogue exchanges. For more details, please read our paper!
+  In this paper we performed a systematic study of the various indirect command types present in the `Cards Corpus <http://cardscorpus.christopherpotts.net/>`. We developed models demonstrating that well-formulated notions of common ground discourse can be useful for pragmatically disambiguating certain dialogue exchanges. For more details, please read our paper!
  
   
 Structure
