@@ -5,3 +5,7 @@ cards-env/*
 *.aux
 *.bbl
 *.blg
+dist/
+.idea/
+acl*
+wildcard.egg*
